@@ -1,0 +1,339 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>K_means_with_random_point_at_all_posiotions</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-05-06"><meta name="DC.source" content="K_means_with_random_point_at_all_posiotions.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Illustration of the K-means algorithm using the re-scaled Old Faithful</a></li><li><a href="#2">initialization</a></li><li><a href="#3">kmeans algorithm</a></li></ul></div><h2 id="1">Illustration of the K-means algorithm using the re-scaled Old Faithful</h2><pre class="codeinput"><span class="comment">% data set. (a) Green points denote the data set in a two-dimensional</span>
+<span class="comment">% Euclidean space. The initial choices for centres ?1 and ?2 are shown</span>
+<span class="comment">% by the red and blue crosses, respectively. (b) In the initial E step,</span>
+<span class="comment">% each data point is assigned either to the red cluster or to the blue</span>
+<span class="comment">% cluster, according to which cluster centre is nearer.</span>
+<span class="comment">% This is equivalent to classifying the points according to which side of</span>
+<span class="comment">% the perpendicular bisector of the two cluster centres, shown by the</span>
+<span class="comment">% magenta line, they lie on. (c) In the subsequent M step, each cluster</span>
+<span class="comment">% centre is re-computed to be the mean of the points assigned to the</span>
+<span class="comment">% corresponding cluster. (d)?(i) show successive E and M steps through to</span>
+<span class="comment">% final convergence of the algorithm.</span>
+</pre><h2 id="2">initialization</h2><p>import java.util.LinkedList; queue = LinkedList();</p><pre class="codeinput">clear;
+clf;
+<span class="comment">% initial samples points in 2-dimentional graph</span>
+
+<span class="comment">% create 200 random points for samples</span>
+number_of_samples = 400;
+samples = rand(number_of_samples,2);
+a = 0;
+b = 4;
+
+<span class="comment">% initial K cluster for classification and plot in addition to the samples</span>
+number_of_clusters = 2;
+
+figure1 = axes();
+figure1.Title.String = <span class="string">'Please input your 2 clusters points, and then click enter'</span>;
+axis([0 1 0 1])
+
+[x, y] = getpts(figure1);
+clusters = [x,y];
+clear <span class="string">temp</span>;
+
+<span class="comment">% clusters = 1.*rand(number_of_clusters,2) ;</span>
+hold <span class="string">on</span>
+
+plot(clusters(1:(number_of_clusters/2),1),<span class="keyword">...</span>
+    clusters(1:(number_of_clusters/2),2),<span class="string">'ks'</span>,<span class="keyword">...</span>
+    clusters(((number_of_clusters/2)+1): number_of_clusters,1), <span class="keyword">...</span>
+    clusters(((number_of_clusters/2)+1): number_of_clusters,2),<span class="string">'ks'</span>);
+
+<span class="comment">% initial cluster belong variable R_nk.</span>
+<span class="comment">% If data poing X_n is assigned to to cluster k then</span>
+<span class="comment">% r_nk = 1, and r_nk = 0 for j!= k. This is known as 1-of-K coding scheme.</span>
+r_nk = zeros(number_of_samples, number_of_clusters);
+
+<span class="comment">% initial an Euclidient matrix by dim of (# samples)*(# clusters)</span>
+<span class="comment">% each floor is defined for storing minimum Euclidient distance calculation</span>
+<span class="comment">% of the samples and clusters</span>
+eucl_calc = zeros(number_of_samples, number_of_clusters);
+</pre><img vspace="5" hspace="5" src="K_means_with_random_point_at_all_posiotions_01.png" alt=""> <h2 id="3">kmeans algorithm</h2><pre class="codeinput">bln = 0;
+<span class="comment">% determin how many iteration is executed to finish the</span>
+iteration = 0;
+clusters_new_temp = zeros(number_of_clusters,2);
+<span class="keyword">while</span> (clusters_new_temp ~= clusters)
+    iteration = iteration +1;
+    <span class="keyword">if</span> bln == 1
+        clusters = clusters_new_temp;
+    <span class="keyword">end</span>
+
+<span class="comment">% calculate Euclidient distance</span>
+<span class="keyword">for</span> k = 1: number_of_clusters
+    <span class="keyword">for</span> n = 1: number_of_samples
+        eucl_calc(n,k) = sum(((samples(n,:)) - (clusters(k,:))).^2);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% find minimum distance for each data point X_n</span>
+
+<span class="comment">% define temporary matrix for seperate cluster data points</span>
+
+    <span class="comment">% calculate r_nk</span>
+    r_nk(:,:) = 0 ;
+    index = 0;
+    temp_samples = zeros(number_of_samples,2);
+    reverseindex = number_of_samples + 1;
+
+    <span class="keyword">for</span> n = 1: number_of_samples
+     [m_val, m_idx] = min(eucl_calc(n,:));
+     r_nk(n,m_idx) = 1;
+     <span class="comment">% split data points for coloring in plot</span>
+     <span class="comment">% this is an arbitrary work for better understanding</span>
+     <span class="keyword">if</span> m_idx == 1
+         index = index + 1;
+         temp_samples(index,:) = samples(n,:);
+     <span class="keyword">else</span>
+         reverseindex = reverseindex - 1;
+         temp_samples(reverseindex,:) = samples(n,:);
+     <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    pause(0.5);
+    clf;
+     plot(<span class="keyword">...</span>
+        temp_samples(1:(number_of_samples/2),1),<span class="keyword">...</span>
+        temp_samples(1:(number_of_samples/2),2),<span class="string">'bp'</span>,<span class="keyword">...</span>
+        temp_samples(((number_of_samples/2)+1):number_of_samples, 1),<span class="keyword">...</span>
+        temp_samples(((number_of_samples/2)+1):number_of_samples, 2),<span class="string">'r*'</span>);
+    hold <span class="string">on</span>
+
+    plot(clusters(1:(number_of_clusters/2),1),<span class="keyword">...</span>
+        clusters(1:(number_of_clusters/2),2),<span class="string">'bs'</span>,<span class="keyword">...</span>
+        clusters(((number_of_clusters/2)+1): number_of_clusters,1), <span class="keyword">...</span>
+        clusters(((number_of_clusters/2)+1): number_of_clusters,2),<span class="string">'rs'</span>);
+
+
+    <span class="comment">% update clusters weights</span>
+    clusters_new_temp = zeros(number_of_clusters,2);
+    <span class="keyword">for</span> cluster_update = 1: number_of_clusters
+        clusters_new_temp(cluster_update,:) = <span class="keyword">...</span>
+            (sum(samples .* r_nk(: ,cluster_update))) ./ <span class="keyword">...</span>
+            sum(r_nk(: ,cluster_update));
+        bln = 1;
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+disp(<span class="string">'number of iteration'</span>);
+disp(iteration);
+</pre><pre class="codeoutput">number of iteration
+    20
+
+</pre><img vspace="5" hspace="5" src="K_means_with_random_point_at_all_posiotions_02.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Illustration of the K-means algorithm using the re-scaled Old Faithful 
+
+% data set. (a) Green points denote the data set in a two-dimensional 
+% Euclidean space. The initial choices for centres ?1 and ?2 are shown
+% by the red and blue crosses, respectively. (b) In the initial E step,
+% each data point is assigned either to the red cluster or to the blue
+% cluster, according to which cluster centre is nearer. 
+% This is equivalent to classifying the points according to which side of 
+% the perpendicular bisector of the two cluster centres, shown by the 
+% magenta line, they lie on. (c) In the subsequent M step, each cluster 
+% centre is re-computed to be the mean of the points assigned to the 
+% corresponding cluster. (d)?(i) show successive E and M steps through to 
+% final convergence of the algorithm.
+
+%% initialization
+% import java.util.LinkedList;
+% queue = LinkedList();
+clear;
+clf;
+% initial samples points in 2-dimentional graph
+
+% create 200 random points for samples
+number_of_samples = 400;
+samples = rand(number_of_samples,2);
+a = 0;
+b = 4;
+
+% initial K cluster for classification and plot in addition to the samples
+number_of_clusters = 2;
+
+figure1 = axes();
+figure1.Title.String = 'Please input your 2 clusters points, and then click enter';
+axis([0 1 0 1])
+
+[x, y] = getpts(figure1);
+clusters = [x,y];
+clear temp;
+
+% clusters = 1.*rand(number_of_clusters,2) ;
+hold on
+
+plot(clusters(1:(number_of_clusters/2),1),...
+    clusters(1:(number_of_clusters/2),2),'ks',...
+    clusters(((number_of_clusters/2)+1): number_of_clusters,1), ...
+    clusters(((number_of_clusters/2)+1): number_of_clusters,2),'ks');
+
+% initial cluster belong variable R_nk.
+% If data poing X_n is assigned to to cluster k then
+% r_nk = 1, and r_nk = 0 for j!= k. This is known as 1-of-K coding scheme.
+r_nk = zeros(number_of_samples, number_of_clusters);
+
+% initial an Euclidient matrix by dim of (# samples)*(# clusters)
+% each floor is defined for storing minimum Euclidient distance calculation
+% of the samples and clusters
+eucl_calc = zeros(number_of_samples, number_of_clusters);
+
+%% kmeans algorithm
+bln = 0;
+% determin how many iteration is executed to finish the 
+iteration = 0;
+clusters_new_temp = zeros(number_of_clusters,2);
+while (clusters_new_temp ~= clusters)
+    iteration = iteration +1;
+    if bln == 1
+        clusters = clusters_new_temp;
+    end
+
+% calculate Euclidient distance
+for k = 1: number_of_clusters
+    for n = 1: number_of_samples
+        eucl_calc(n,k) = sum(((samples(n,:)) - (clusters(k,:))).^2);
+    end
+end
+
+% find minimum distance for each data point X_n
+
+% define temporary matrix for seperate cluster data points
+   
+    % calculate r_nk
+    r_nk(:,:) = 0 ;
+    index = 0;
+    temp_samples = zeros(number_of_samples,2);
+    reverseindex = number_of_samples + 1;
+
+    for n = 1: number_of_samples
+     [m_val, m_idx] = min(eucl_calc(n,:));
+     r_nk(n,m_idx) = 1;
+     % split data points for coloring in plot
+     % this is an arbitrary work for better understanding
+     if m_idx == 1
+         index = index + 1;        
+         temp_samples(index,:) = samples(n,:);
+     else
+         reverseindex = reverseindex - 1;
+         temp_samples(reverseindex,:) = samples(n,:);
+     end
+    end
+
+    pause(0.5);
+    clf;
+     plot(...
+        temp_samples(1:(number_of_samples/2),1),...
+        temp_samples(1:(number_of_samples/2),2),'bp',...
+        temp_samples(((number_of_samples/2)+1):number_of_samples, 1),...
+        temp_samples(((number_of_samples/2)+1):number_of_samples, 2),'r*');
+    hold on
+
+    plot(clusters(1:(number_of_clusters/2),1),...
+        clusters(1:(number_of_clusters/2),2),'bs',...
+        clusters(((number_of_clusters/2)+1): number_of_clusters,1), ...
+        clusters(((number_of_clusters/2)+1): number_of_clusters,2),'rs');
+    
+
+    % update clusters weights
+    clusters_new_temp = zeros(number_of_clusters,2);
+    for cluster_update = 1: number_of_clusters
+        clusters_new_temp(cluster_update,:) = ...
+            (sum(samples .* r_nk(: ,cluster_update))) ./ ...
+            sum(r_nk(: ,cluster_update));
+        bln = 1;
+    end
+    
+end
+disp('number of iteration');
+disp(iteration);
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+##### SOURCE END #####
+--></body></html>
